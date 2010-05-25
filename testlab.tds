@@ -1,0 +1,1780 @@
+' ###########################################################################
+'
+' Quality Center Template Project Accelerator
+' Version 9.2.16
+'
+' Created By:
+' Quality Management Global Practices Team
+' HP Software Professional Services
+'
+' The code in this solution is the property of HP Software Professional Services.
+' When delivered to customers during a paid consulting engagement, it may be
+' copied and editted without limitation within the same company.
+'
+' date        who   Change
+'----------   ---   -----------------------
+' 2006/06/01  JV    Created QC 9.0 Version
+' 2007/07/01  JV    Upgraded to QC 9.2 Functions
+' 2007/07/13  JV    Enhancement - Transition manager now supports '+' to require extra
+'                   fields to be non empty for rule to evalute to true
+' 2007/09/15  JV    Created the Folder Manager Class
+' ###########################################################################
+
+
+
+
+'----------------------------------------------------------------------------
+' USER CUSTOMIZABLE: FIELD PROPERTIES CONFIGURATION
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+' Function: USER_TestLab_FieldConfig
+' Purpose:
+' Order the fields in this module, make invisible, set required, make read only, set
+' create additional pages and set order in each
+'
+' Instructions:
+' Below place the fields in order that they should appear
+' Consider that they will be drawn in two columns alternating Left, Right down the page
+' Based on the parameter "pIsNew" you specify the field behavior is both the New Dialog
+' and the "Details" dialog that opens for existing entities.
+'
+' Syntax:
+'        QM_FIELD  <FieldName> , <IsHidden>, <IsRequired>, <IsReadOnly>, <Page#>
+'
+'        <FieldName>   = Friendly name of the field, not the system or DB column name
+'        <IsHidden>    = kYES for invisible, and kNO for visible
+'        <IsRequired>  = kYES for required, and kNO for not required
+'        <IsReadOnly>  = kYES for read only, and kNO to make it editable
+'        <Page#>       = Only the page #0 is used, all other entries will only hide the field
+'
+Function USER_TestLab_FieldConfig(pIsNew)
+  'On Error Resume Next
+
+  Select Case kTRUE
+    Case (User.IsInGroup("MB_Developer"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+         'QASSURE - Added code to remove "Reviewed" option from test set ITPM/ITPL Reviewed Dhaval April 19 2010
+          TestSet_Fields("CY_USER_03").List = Lists("Refix Status")
+
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) And TestSet_Fields("ITPM/ITPL Reviewed").Value = "Need More Info." Then
+            gTLFields.SetField    "ITPM/ITPL Reviewed",kNO ,      kNO ,        kNO ,        0
+          Else
+            gTLFields.SetField    "ITPM/ITPL Reviewed",kNO ,      kNO ,        kYES ,        0
+          End If
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_IT Project Leader"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) Then
+            If TestSet_Fields("ITPM/ITPL Reviewed").Value = "Need More Info." Then
+              'QASSURE - Added code to remove "Reviewed" option from test set ITPM/ITPL Reviewed Dhaval April 19 2010
+              TestSet_Fields("CY_USER_03").List = Lists("Refix Status")
+              gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kNO ,        0
+            Else
+              gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+            End If
+          Else
+             If TestSet_Fields("ITPM/ITPL Reviewed").Value = "Need More Info." Then
+              gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+            Else
+              gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kNo ,        0
+            End If
+            'QASSURE - Added code to remove "Reviewed" option from test set ITPM/ITPL Reviewed Dhaval April 19 2010
+            If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) Then
+               If TestSet_Fields("ITPM/ITPL Reviewed").Value = "Need More Info." Then
+              TestSet_Fields("CY_USER_03").List = Lists("Refix Status")
+              TestSet_Fields("CY_USER_03").IsReadOnly = False
+              End if
+            End if
+          End If
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" And TestSet_Fields("Reviewed").Value = "Reviewed" Then
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        Else
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_IT Project Manager"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          If TestSet_Fields("ITPM/ITPL Reviewed").Value = "Need More Info." Then
+            gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+          Else
+            gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kNo ,        0
+          End If
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" And TestSet_Fields("Reviewed").Value = "Reviewed" Then
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        Else
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_Tester"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+     'QASSURE - Added code to remove "Reviewed" option from test set TM/TL Reviewed Dhaval April 19 2010
+         TestSet_Fields("CY_USER_05").List = Lists("Refix Status")
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) And TestSet_Fields("TM/TL Reviewed").Value = "Need More Info." Then
+            gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+          Else
+            gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+          End If
+          gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_Test Leader"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) Then
+            If TestSet_Fields("TM/TL Reviewed").Value = "Need More Info." Then
+              gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+            Else
+              gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+            End If
+          Else
+            If TestSet_Fields("TM/TL Reviewed").Value = "Need More Info." Then
+              gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+            Else
+              gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+            End If
+          End If
+          gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "UAT" And TestSet_Fields("Reviewed").Value = "Reviewed" Then
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        Else
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_Test Manager"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          If TestSet_Fields("TM/TL Reviewed").Value = "Need More Info." Then
+            gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+          Else
+            gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+          End If
+          gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "UAT" And TestSet_Fields("Reviewed").Value = "Reviewed" Then
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        Else
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_QA Tester"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kYES ,      kNO ,        kYES ,        0
+          If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) And TestSet_Fields("QAM/QAL Reviewed").Value = "Need More Info." Then
+            gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kNO ,        0
+          Else
+            gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kYES ,        0
+          End If
+          gTLFields.SetField    "QAM/QAL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_QA Leader"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kYES ,      kNO ,        kYES ,        0
+          If UCase(TestSet_Fields("Creator").Value) = UCase(User.UserName) Then
+            If  TestSet_Fields("QAM/QAL Reviewed").Value = "Need More Info." Then
+              gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kNO ,        0
+            Else
+              gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kYES ,        0
+            End If
+          Else
+            If  TestSet_Fields("QAM/QAL Reviewed").Value = "Need More Info." Then
+              gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kYES ,        0
+            Else
+              gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kNO ,        0
+            End If
+          End If
+          gTLFields.SetField    "QAM/QAL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "QAT" And TestSet_Fields("Reviewed").Value = "Reviewed" Then
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        Else
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    Case (User.IsInGroup("MB_QA Manager"))
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    If (pIsNew = kYES) Then
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kYES ,     kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+     Else
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kNO ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kNO ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "SIT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "UAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewed",    kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "QAM/QAL Reviewer",    kYES ,      kNO ,        kYES ,        0
+        ElseIf TestSet_Fields("Test Phase").Value = "QAT" Then
+          gTLFields.SetField    "ITPM/ITPL Reviewed",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "ITPM/ITPL Reviewer",  kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewed",      kYES ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "TM/TL Reviewer",      kYES ,      kNO ,        kYES ,        0
+          If  TestSet_Fields("QAM/QAL Reviewed").Value = "Need More Info." Then
+            gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kYES ,        0
+          Else
+            gTLFields.SetField    "QAM/QAL Reviewed",    kNO ,      kNO ,        kNO ,        0
+          End If
+        gTLFields.SetField    "QAM/QAL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        If TestSet_Fields("Test Phase").Value = "QAT" And TestSet_Fields("Reviewed").Value = "Reviewed" Then
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        Else
+          gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+          gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        End If
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,        kNO ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,    kNO ,        kNO ,        0
+    End If
+
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    Case (User.IsInGroup("MB_QCAdmin"))
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kYES ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kYES ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kNO ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kNO ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,       kYES ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,       kYES ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,     kNO ,       kYES ,        0
+
+    '--------------------------------------------------------------------------------------------
+    '   gTLFields.SetField     FriendlyFieldName       Hidden?    Required?    ReadOnly?    Page#
+    '----------------------    ---------------------   -------    ---------    ---------    -----
+    Case Else  ' ALL OTHER GROUPS
+        ' System Controlled, can not relocate
+        gTLFields.SetField    "Test Set",              kNO ,      kYES,        kYES ,        0
+        gTLFields.SetField    "Description",           kNO ,      kNO ,        kYES ,        0
+        ' Lower User Defined Fields
+        gTLFields.SetField    "Planned Start Date",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Planned End Date",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewed",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "ITPM/ITPL Reviewer",    kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewed",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "TM/TL Reviewer",        kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewed",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "QAM/QAL Reviewer",      kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Reviewed",              kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Creator",               kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewed", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Results Reviewer", kNO ,      kNO ,        kYES ,        0
+        gTLFields.SetField    "Test Phase",            kNO ,      kNO ,        kYES ,        0
+        ' Hidden
+        gTLFields.SetField    "Status",                kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Open Date",             kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Close Date",            kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Target Cycle",          kYES ,      kNO ,       kYES ,        0
+        gTLFields.SetField    "Test Set Folder",       kYES  ,     kNO ,       kYES ,        0
+        gTLFields.SetField    "Modified",              kYES  ,     kNO ,       kYES ,        0
+        gTLFields.SetField    "ITG Request ID",        kYES  ,     kNO ,       kYES ,        0
+  End Select
+
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub USER_TestLab_FieldTransitions
+  On Error Resume Next
+
+    ' USER CUSTOMIZABLE:
+    ' ------------------
+    ' Purpose:
+    ' Enter in all of the rules to implement allowed field value changes. During rule
+    ' processing if there is no rule found for a field, all transitions for all
+    ' user roles are automatically allowed.
+    '
+    ' INSTRUCTIONS:
+    ' Enter in each allowed state change in the following rule format.  An "*"
+    ' can be used as a wildcard in any of the state or user role fields.   If a
+    ' single rule is entered for a field, all transitions must then be covered.
+    ' perhaps by using a wild card transition rule.   ex AddRule "FieldName,*,*,Role"
+    '
+    ' Syntax:
+    '  AddRule  <FieldName>,<From State>,<To State>,<User Role>,[ <DepFieldName>,<DepFieldValue> ]*
+    '     the character '*' can be used as a wildcard in state or user role fields
+    '
+    '     <FieldName>     - Name of the field
+    '     <From State>    - Current value of field <FieldName>
+    '     <To State>      - Attempted New Value of field <FieldName>
+    '     <User Role>     - User role for which such a state change is allowed
+    '     <DepFieldName>  - Name of other field dependency for rule to fire
+    '     <DepFieldValue> - Value of other field dependency for rule to fire
+
+    ' Status Field
+    '----------------------------------------------------------------------------
+
+    ' Examples:
+    'gTLTrans.AddRule "Status,Open,*,QM Development Manager"
+    'gTLTrans.AddRule "Status,Closed,Open,QM Development Manager,Open Date,8/8/2006"
+
+    'gTLTrans.AddRule "Status,Open,*,QM Development Manager"
+    'gTLTrans.AddRule "Open Date,*,*,QM Development Manager,Status,Open"
+    'gTLTrans.AddRule "Open Date,*,*,QM Development Manager,Close Date,9/7/2006"
+
+    ' Superuser priviledges
+    'gTLTrans.AddRule "Status,*,*,TDAdmin"
+
+    ' Example rule containing additional field dependencies.
+    '   Here the Dev Manager can only move defects from New to Open
+    '   when Priority is 1 or 2
+    'gTLTrans.AddRule "Status,New,Open,QM Development Manager,Priority,1-Low"
+    'gTLTrans.AddRule "Status,New,Open,QM Development Manager,Priority,2-Medium"
+
+    ' ------------------
+    ' END USER CUSTOMIZABLE:
+
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function USER_TestLab_FolderPermission()
+  On Error Resume Next
+
+    ' USER CUSTOMIZABLE:
+    ' ------------------
+    ' Purpose:
+    ' Enter in all of the user roles that will be limited in the changes they can
+    ' make to folders in the hieararchy.   Enter the level for which they will have
+    ' the ability to make changes to included all lower levels.   To have access to
+    ' to change any level, a user would need level 1 access.   This is what users
+    ' will default to if they are not added to this configuration.    A user with level
+    ' 3 access would have the ability to delete any folder such as  Root/Level2/Leve3
+    '
+    ' INSTRUCTIONS:
+    ' Enter in a row for every role that has a level access starting below the root level
+    ' (level 1 access).
+    '
+    ' Syntax:
+    '  Case  <User Role>, <Permission Level>
+    '
+    '     <User Role>         - User role for which such a folder change is allowed
+    '     <Permission Level>  - Lowest Level of change permissions in folder hiearchy
+    '
+    Select Case kTRUE
+       'Case (User.IsInGroup("QM QA Manager"))              USER_TestLab_FolderPermission = 1
+       'Case (User.IsInGroup("QM QA Engineer"))             USER_TestLab_FolderPermission = 2
+       'Case (User.IsInGroup("QM QA Automation Engineer"))  USER_TestLab_FolderPermission = 3
+       'Case (User.IsInGroup("QM QA Tester"))               USER_TestLab_FolderPermission = 4
+                                                           ' Default Value
+       'Case Else                                           USER_TestLab_FolderPermission = 1
+    End Select
+    ' ------------------
+    ' END USER CUSTOMIZABLE:
+
+  On Error GoTo 0
+End Function
+'----------------------------------------------------------------------------
+' USER CUSTOMIZABLE: END
+'----------------------------------------------------------------------------
+
+
+
+
+
+'----------------------------------------------------------------------------
+'   9.2 FUNCTIONS
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub RunTests(Tests)
+  'On Error Resume Next
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub RunTestsManually(Tests)
+  'On Error Resume Next
+  'msgbox "RunTestsManually"
+  'For each Test in Tests
+  '  msgbox Test
+  'Next
+
+  If TestSet_Fields("Reviewed").Value = "Not Reviewed" Or TestSet_Fields("Reviewed").Value = "Need More Info." Then
+
+  End If
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub RunTestSet(Tests)
+  'On Error Resume Next
+  'msgbox "RunTestSet"
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub MoveToFolder(Folder)
+  'On Error Resume Next
+
+  ' **** QM *****
+  ' This fuction implements updates the Folder Manger which keeps track of the currently
+  ' selected folder in the Test Lab hiararchy.   Folder object will be nothing if user
+  ' selects Unattached storage in Level 1
+  If Not Folder Is Nothing Then
+      gTLFolder.FolderChanged(Folder)
+  End If
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub TestSet_New
+  'On Error Resume Next
+
+  ' **** QM *****
+  ' Set field attributes (readonly, required, visible) and also
+  ' orders the fields plus supporting multiple pages (tabs)s
+  ' Parameter "pIsNew" is set to True=kYes
+  gTLFields.SetupFormLayout(kYes)
+
+  TestSet_Fields("Creator").IsReadOnly = False
+  TestSet_Fields("Creator").Value = User.UserName
+  TestSet_Fields("Creator").IsReadOnly = True
+  TestSet_Fields("ITPM/ITPL Reviewed").IsReadOnly = False
+  TestSet_Fields("ITPM/ITPL Reviewed").Value = "Not Reviewed"
+  TestSet_Fields("ITPM/ITPL Reviewed").IsReadOnly = True
+  TestSet_Fields("TM/TL Reviewed").IsReadOnly = False
+  TestSet_Fields("TM/TL Reviewed").Value = "Not Reviewed"
+  TestSet_Fields("TM/TL Reviewed").IsReadOnly = True
+  TestSet_Fields("QAM/QAL Reviewed").IsReadOnly = False
+  TestSet_Fields("QAM/QAL Reviewed").Value = "Not Reviewed"
+  TestSet_Fields("QAM/QAL Reviewed").IsReadOnly = True
+  TestSet_Fields("Reviewed").IsReadOnly = False
+  TestSet_Fields("Reviewed").Value = "Not Reviewed"
+  TestSet_Fields("Reviewed").IsReadOnly = True
+  TestSet_Fields("Test Results Reviewed").IsReadOnly = False
+  TestSet_Fields("Test Results Reviewed").Value = "Not Reviewed"
+  TestSet_Fields("Test Results Reviewed").IsReadOnly = True
+
+  If User.IsInGroup("MB_Developer") Or User.IsInGroup("MB_IT Project Leader") Then
+    TestSet_Fields("Test Phase").IsReadOnly = False
+    TestSet_Fields("Test Phase").Value = "SIT"
+    TestSet_Fields("Test Phase").IsReadOnly = True
+  End If
+
+  If User.IsInGroup("MB_Tester") Or User.IsInGroup("MB_Test Leader") Then
+    TestSet_Fields("Test Phase").IsReadOnly = False
+    TestSet_Fields("Test Phase").Value = "UAT"
+    TestSet_Fields("Test Phase").IsReadOnly = True
+  End If
+
+  If User.IsInGroup("MB_QA Tester") Or User.IsInGroup("MB_QA Leader") Then
+    TestSet_Fields("Test Phase").IsReadOnly = False
+    TestSet_Fields("Test Phase").Value = "QAT"
+    TestSet_Fields("Test Phase").IsReadOnly = True
+  End If
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub TestSet_MoveTo
+  'On Error Resume Next
+
+  ' **** QM *****
+  ' Set field attributes (readonly, required, visible) and also
+  ' orders the fields plus supporting multiple pages (tabs)s
+  ' Parameter "pIsNew" is set to False=kNo
+  gTLFields.SetupFormLayout(kNo)
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function TestSet_FieldCanChange(FieldName, NewValue)
+  'On Error Resume Next
+
+  TestSet_FieldCanChange = DefaultRes
+
+  ' **** QM *****
+  ' This fuction implements Field Value transition rules.  It checks if each change
+  ' is in its list of allowed rules, and if not found the change is rejected
+  TestSet_FieldCanChange = gTLTrans.TransitionAllowed(FieldName, NewValue)
+
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub TestSet_FieldChange(FieldName)
+  'On Error Resume Next
+  If FieldName = "CY_USER_03" And TestSet_Fields("ITPM/ITPL Reviewed").Value = "Reviewed" Then
+    TestSet_Fields("ITPM/ITPL Reviewer").IsReadOnly = False
+    TestSet_Fields("ITPM/ITPL Reviewer").Value = User.UserName
+    TestSet_Fields("ITPM/ITPL Reviewer").IsReadOnly = True
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Reviewed"
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_03" And TestSet_Fields("ITPM/ITPL Reviewed").Value = "Not Reviewed" Then
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Not Reviewed"
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_03" And TestSet_Fields("ITPM/ITPL Reviewed").Value = "Need More Info." Then
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Need More Info."
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_05" And TestSet_Fields("TM/TL Reviewed").Value = "Reviewed" Then
+    TestSet_Fields("TM/TL Reviewer").IsReadOnly = False
+    TestSet_Fields("TM/TL Reviewer").Value = User.UserName
+    TestSet_Fields("TM/TL Reviewer").IsReadOnly = True
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Reviewed"
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_05" And TestSet_Fields("TM/TL Reviewed").Value = "Not Reviewed" Then
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Not Reviewed"
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_05" And TestSet_Fields("TM/TL Reviewed").Value = "Need More Info." Then
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Need More Info."
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_12" And TestSet_Fields("QAM/QAL Reviewed").Value = "Reviewed" Then
+    TestSet_Fields("QAM/QAL Reviewer").IsReadOnly = False
+    TestSet_Fields("QAM/QAL Reviewer").Value = User.UserName
+    TestSet_Fields("QAM/QAL Reviewer").IsReadOnly = True
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Reviewed"
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_12" And TestSet_Fields("QAM/QAL Reviewed").Value = "Not Reviewed" Then
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Not Reviewed"
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_12" And TestSet_Fields("QAM/QAL Reviewed").Value = "Need More Info." Then
+    TestSet_Fields("Reviewed").IsReadOnly = False
+    TestSet_Fields("Reviewed").Value = "Need More Info."
+    TestSet_Fields("Reviewed").IsReadOnly = True
+  End If
+
+  If FieldName = "CY_USER_10" And TestSet_Fields("Test Results Reviewed").Value = "Reviewed" Then
+    TestSet_Fields("Test Results Reviewer").IsReadOnly = False
+    TestSet_Fields("Test Results Reviewer").Value = User.UserName
+    TestSet_Fields("Test Results Reviewer").IsReadOnly = True
+  End If
+
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function TestSet_CanPost
+  'On Error Resume Next
+
+  TestSet_CanPost = DefaultRes
+  On Error GoTo 0
+End Function
+
+
+'----------------------------------------------------------------------------
+'* Modification History
+'* Name        |Date      |Description of Changes
+'* Chen, Gary  |25/07/2009|Initial Development
+'* Chen, Gary  |12/01/2010|Fix for script error when deleting folder in tl mod
+'*                        |Added "If IsTestSet Then ... End If"
+'----------------------------------------------------------------------------
+Function TestSet_CanDelete(Entity,IsTestSet)
+  'On Error Resume Next
+    'msgbox "TestSet_CanDelete"
+    If IsTestSet Then
+        Set TSTestFact = Entity.TSTestFactory
+        Set TestSetTestsList = TSTestFact.NewList("")
+        Dim i
+        For i = 1 to TestSetTestsList.Count
+          'msgbox TestSetTestsList.Item(i).Status
+          If TestSetTestsList.Item(i).Status <> "No Run" Then
+            TestSet_CanDelete = False
+            MsgBox "The test set you want to delete has been executed and can't be deteted!"
+            Exit For
+          Else
+            TestSet_CanDelete = DefaultRes
+          End IF
+        Next
+        Set TSTestFact = Nothing
+        Set TestSetTestsList = Nothing
+     End If
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function TestSet_CanAddTests(Tests)
+  'On Error Resume Next
+
+  TestSet_CanAddTests = DefaultRes
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function TestSet_CanRemoveTests(Tests)
+  'On Error Resume Next
+
+  'If the test in test set has been executed, user can't delete it!!
+  For i = 1 to Tests.count
+    If Tests.Item(i).Status <> "No Run" Then
+      TestSet_CanRemoveTests = False
+      MsgBox "The test you want to delete has been executed and can't be deteted!"
+      Exit For
+    Else
+      TestSet_CanRemoveTests = DefaultRes
+    End If
+  Next
+
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub TestSet_AfterPost
+  'On Error Resume Next
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub TestSetTests_MoveTo
+  'On Error Resume Next
+  'msgbox "TestSetTests_MoveTo"
+  On Error GoTo 0
+End Sub
+
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function TestSetTests_FieldCanChange(FieldName, NewValue)
+  'On Error Resume Next
+
+  TestSetTests_FieldCanChange = DefaultRes
+
+  On Error GoTo 0
+End Function
+
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub TestSetTests_FieldChange(FieldName)
+  'On Error Resume Next
+
+  'When update the TC_USER_01, scan all tests' "Planned Start Date" and get the earlest one and update to TestSet.
+
+  'msgbox TestSet_Fields("CY_CYCLE_ID").Value
+  'Set tfact = TDConnection.TestFactory
+  'Set tlist = tfact.NewList("select * from test where ts_name='CIB'")
+
+  'Note: You can replace the empty string in the NewList method above with a sql statement to return a recordset of test sets. This can prevent the need for using a loop to locate the test set.
+  'Example:
+  'Set tlist = tfact.NewList("select * from test where ts_name='mytest'")
+  'For Each ts In tlist
+  ' tstfact.AddItem (ts.ID)
+  'Next
+   'QASSURE - Adding code to have reviews on the test case level.
+    If FieldName = "TC_USER_03" Then
+    TestSetTest_Fields("Results Reviewed by").IsReadOnly = False
+    TestSetTest_Fields("Results Reviewed by").Value = User.UserName
+    TestSetTest_Fields("Results Reviewed by").IsReadOnly = True
+    End If
+
+
+  'If update test's "Planned Start Date, will also updage TestSet's Planned Start Date
+  If FieldName = "TC_USER_01" Then
+    'msgbox TestSet_Fields("CY_CYCLE").Value
+    'msgbox TestSetTest_Fields("Planned Start Date").Value
+    If TestSet_Fields("Planned Start Date").Value = "" Then
+      TestSet_Fields("Planned Start Date").IsReadOnly = False
+      TestSet_Fields("Planned Start Date").Value = TestSetTest_Fields("Planned Start Date").Value
+      TestSet_Fields("Planned Start Date").IsReadOnly = True
+    ElseIf CDate(TestSet_Fields("Planned Start Date").Value) >  CDate(TestSetTest_Fields("Planned Start Date").Value) Then
+      TestSet_Fields("Planned Start Date").IsReadOnly = False
+      TestSet_Fields("Planned Start Date").Value = TestSetTest_Fields("Planned Start Date").Value
+      TestSet_Fields("Planned Start Date").IsReadOnly = True
+    End If
+    'msgbox TestSet_Fields("Planned Start Date").Value
+  End If
+
+  If FieldName = "TC_USER_02" Then
+    'msgbox TestSet_Fields("CY_CYCLE").Value
+    'msgbox TestSetTest_Fields("Planned End Date").Value
+    If TestSet_Fields("Planned End Date").Value = "" Then
+      TestSet_Fields("Planned End Date").IsReadOnly = False
+      TestSet_Fields("Planned End Date").Value = TestSetTest_Fields("Planned End Date").Value
+      TestSet_Fields("Planned End Date").IsReadOnly = True
+    ElseIf CDate(TestSet_Fields("Planned End Date").Value) <  CDate(TestSetTest_Fields("Planned End Date").Value) Then
+      TestSet_Fields("Planned End Date").IsReadOnly = False
+      TestSet_Fields("Planned End Date").Value = TestSetTest_Fields("Planned End Date").Value
+      TestSet_Fields("Planned End Date").IsReadOnly = True
+    End If
+    'msgbox TestSet_Fields("Planned End Date").Value
+  End If
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub Run_MoveTo
+  'On Error Resume Next
+
+  'msgbox "Run_MoveTo"
+
+  On Error GoTo 0
+End Sub
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function Run_CanPost
+  'On Error Resume Next
+
+  Run_CanPost = DefaultRes
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Sub Run_AfterPost
+  'On Error Resume Next
+
+  On Error GoTo 0
+End Sub
+
+
+
+
+
+
+'----------------------------------------------------------------------------
+'   9.0 FUNCTIONS still used
+'----------------------------------------------------------------------------
+'----------------------------------------------------------------------------
+Function TestLab_ActionCanExecute(ActionName)
+  'On Error Resume Next
+
+    If ActionName = "DetailsAct"  Then
+'      ReadVal = TestSetTest_Fields("Results Reviewed").IsReadOnly
+   If TestSetTest_Fields("Results Reviewed").Value = "" Then
+      TestSetTest_Fields("Results Reviewed").IsReadOnly = False
+      TestSetTest_Fields("Results Reviewed").Value = "Not Reviewed"
+ '     If ReadVal = True Then
+  '       TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+   '      Else
+    '     TestSetTest_Fields("Results Reviewed").IsReadOnly = False
+    '  End If
+   End If
+'
+   IF TestSet_Fields("Test Phase").Value = "SIT" Then
+
+      If (User.IsInGroup("MB_Tester") Or User.IsInGroup("MB_Test Leader") Or User.IsInGroup("MB_Test Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+      End IF
+
+      If (User.IsInGroup("MB_QA Tester") Or User.IsInGroup("MB_QA Leader") Or User.IsInGroup("MB_QA Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+      End IF
+
+      If (User.IsInGroup("MB_Developer") Or User.IsInGroup("MB_IT Project Leader") Or User.IsInGroup("MB_IT Project Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = False
+      End IF
+   End IF
+
+   IF TestSet_Fields("Test Phase").Value = "UAT" Then
+      If (User.IsInGroup("MB_Developer") Or User.IsInGroup("MB_IT Project Leader") Or User.IsInGroup("MB_IT Project Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+      End IF
+
+      If (User.IsInGroup("MB_QA Tester") Or User.IsInGroup("MB_QA Leader") Or User.IsInGroup("MB_QA Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+      End IF
+
+      If (User.IsInGroup("MB_Tester") Or User.IsInGroup("MB_Test Leader") Or User.IsInGroup("MB_Test Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = False
+      End IF
+  End IF
+
+  IF TestSet_Fields("Test Phase").Value = "QAT" Then
+      If (User.IsInGroup("MB_Developer") Or User.IsInGroup("MB_IT Project Leader") Or User.IsInGroup("MB_IT Project Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+      End IF
+
+      If (User.IsInGroup("MB_Tester") Or User.IsInGroup("MB_Test Leader") Or User.IsInGroup("MB_Test Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+      End IF
+
+      If (User.IsInGroup("MB_QA Tester") Or User.IsInGroup("MB_QA Leader") Or User.IsInGroup("MB_QA Manager")) Then
+         TestSetTest_Fields("Results Reviewed").IsReadOnly = False
+      End IF
+
+  End IF
+
+
+  If (User.IsInGroup("MB_QA Tester") or User.IsInGroup("MB_Tester") or (User.IsInGroup("MB_Developer"))) Then
+      TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+  End If
+
+    IF (TestSetTest_Fields("Results Reviewed").Value = "Need More Info.") Then
+       If  (TestSetTest_Fields("TC_ACTUAL_TESTER").Value = User.UserName)  Then
+            TestSetTest_Fields("Results Reviewed").IsReadOnly = False
+            TestSetTest_Fields("Results Reviewed").list = Lists("Refix Status")
+            Else
+            TestSetTest_Fields("Results Reviewed").IsReadOnly = True
+       End If
+    End If
+
+
+  End IF
+
+
+  'Uncomment for Action Interception
+  'MsgBox " TestLab_ActionCanExecute ActionName = " & ActionName
+  'Msgbox TestSet_Fields("Reviewed").Value
+  'Only "Reviewed" Test Set can be execute
+  'ROF_QC_SIT_008: add act_run_manually
+  If ActionName = "act_run" Or ActionName = "act_run_test_set" Or _
+     ActionName = "act_run_manually" Or ActionName = "act_continue_man_run" Then
+    If TestSet_Fields("Reviewed").Value = "Reviewed" Then
+      TestLab_ActionCanExecute = True
+    Else
+      Msgbox "You cannot execute this Test Set/Test(s) which has not been reviewed!"
+      TestLab_ActionCanExecute = False
+    End if
+  Else
+    TestLab_ActionCanExecute = True
+  End If
+
+
+
+  ' **** QM *****
+  ' This Folder Manger  function is used to intercept folder related events
+  ' and deny users from making changes to levels of the hieararchy that they
+  ' are not pemitted to change.
+  If TestLab_ActionCanExecute = True Then
+      TestLab_ActionCanExecute = gTLFolder.AllowFolderChange(ActionName)
+  End If
+
+  ' **** QM *****
+  ' This block of code is uses the Folder Manger and prevents specific users from making
+  ' changes to the Releases/Cycles of a folder that contains sub folders.   Quality Center
+  ' will automatically propagate changes to all contained subfolders.    An accidental change
+  ' is prevented here, allowing only the setting of folders that do not contain sub-folders
+  If USR_TL_REL_PROPAGATION_DISABLED = kYes Then
+      If Not User.IsInGroup("TDAdmin") Then
+          If ActionName = "ActAssignToCycle" And gTLFolder.mSubFolderCount > 0 Then
+              MsgBox "The Assignment of Releases and Cycles can only be applied to leaf folders"
+              TestLab_ActionCanExecute = False
+              Exit Function
+          End If
+      End If
+  End If
+
+
+
+  On Error GoTo 0
+End Function
+
+'----------------------------------------------------------------------------
+'   9.0 FUNCTIONS "Removed" and "Depreciated but still active"
+'----------------------------------------------------------------------------
+' Sub TestLab_EnterModule                          ' Active in 9.2
+' Sub TestLab_ExitModule                           ' Active in 9.2
+' Sub TestLab_DialogBox(DialogBoxName, IsOpen)     ' Active in 9.2
+' Sub TestLab_Attachment_New(Attachment)           ' Active in 9.2
+' Function TestLab_Attachment_CanOpen(Attachment)       ' gone
+' Function TestLab_Attachment_CanPost(Attachment)       ' gone
+' Function TestLab_Attachment_CanDelete(Attachment)     ' gone
+' Function TestLab_GetNewReqPageName(PageName,PageNum)  ' gone
+' Function TestLab_GetDetailsPageName(PageName,PageNum) ' gone
+
+
+
+'----------------------------------------------------------------------------
+'-----   Q U A L I T Y    M A N A G E M E N T   L I B R A R Y   -------------
+'                       T E S T   L A B
+'----------------------------------------------------------------------------
+
+'----------------------------------------------------------------------------
+' CLASS: QMPA_TL_FIELDMANAGER
+'----------------------------------------------------------------------------
+Class QMPA_TL_FIELDMANAGER
+    Dim mFieldOrder
+
+    '------------------------------------------------------------------------
+    ' Function: SetupFormLayout
+    ' Description: Invokes User_Setup_Field_Properties to layout requirements
+    '              details view.
+    Sub SetupFormLayout(pIsNew)
+          mFieldOrder = 1
+
+        ' This function is called for each field from the function QM_TL_FieldLayout
+        ' it is passed the field name, and attributes.  It uses the global variable
+        ' holding the location on the screen, which it increments with each call
+         USER_TestLab_FieldConfig(pIsNew)
+    End Sub
+
+    '------------------------------------------------------------------------
+    ' This function is called for each field from the function QM_TL_FieldLayout
+    ' it is passed the field name, and attributes.  It uses the global variable
+    ' holding the location on the screen, which it increments with each call
+    Sub SetField( pFieldName, pVisible, pRequired, pReadOnly, pPage )
+
+       mFieldOrder = mFieldOrder + 1
+
+       'Sets a field's attributes
+       With TestSet_Fields(pFieldName)
+          .IsVisible = Not(pVisible)
+          .IsRequired = pRequired
+          .IsReadOnly = pReadOnly
+          .PageNo = pPage
+          .ViewOrder = mFieldOrder
+       End With
+    End Sub
+
+End Class
+
+'----------------------------------------------------------------------------
+' CLASS: QMPA_TL_FIELDMANAGER
+'----------------------------------------------------------------------------
+Class QMPA_TL_TRANSITION_MANAGER
+
+    ' Member Variable for implementing Dictionary object holding rules
+    Dim mRuleInt      ' As Integer
+    Dim mRuleDict     ' As Dictionary
+
+    '------------------------------------------------------------------------
+    ' Function: TransitionAllowed
+    ' Description: This function contains parses all field transition rules
+    ' and it is called for every field value change.   It walks through all of
+    ' the rules looking for a match.   If a match is found the change is allowed,
+    ' if not a message is shown and the change is not committed.   If there are no
+    ' rules for the field in question, the change is automatically allowed.
+   Function TransitionAllowed(pFieldName, pNewValue)
+        ' Create a new dictionary to hold all workflow rules
+        mRuleInt = 0
+        Set mRuleDict = CreateObject("Scripting.Dictionary")
+
+        Dim lFlagFirstRuleMatch           ' True if first 4 match - used for parsing each rule
+        Dim lFlagFirstRuleMatchOccurred   ' True if first 4 match - if any occured accross all rules
+        Dim lExtraRuleViolation           ' True if first 4 match and one of extra rules fail
+        Dim ExDepField                    ' For Error Reporting when Ex Dep rule fails
+        Dim ExDepValue                    ' For Error Reporting when Ex Dep rule fails
+
+        Dim lStrArray         ' Array of Strings
+        Dim lStrArraySize     ' Array of Strings
+        Dim lRuleStr          ' temp stringvariable
+        Dim lTmpInt           ' temp integer for loop index
+        Dim lTmpExtraInt      ' temp integer for looping through extra dependencies
+        Dim lTmpIntExtraSets  ' temp integer for looping through extra dependencies
+        Dim lFieldInList      ' flag set to true if a rule for it exists in the rule list
+
+        ' The following function contains all of the individual field configurations
+        ' and is separated out for easy end-user configuration.
+        USER_TestPlan_FieldTransitions
+
+        ' Defect Workflow - State Machine Engine
+        ' * the following funtion walks all of the rules returning True if it finds
+        '   a matching rule allowing the current user's role to change to NewValue
+        '   from the previous value.    If a rule is not fould allowing such action
+        '   False is returned, and an error message box is displayed, and the action is
+        '   rejected returning the field to the previous value.
+        TransitionAllowed = False
+        lFlagFirstRuleMatchOccurred = False
+        lFieldInList = False   ' By default if the current field does not have a rule, allow change
+
+
+        ' Loop through all rules, break them appart and look for a match
+        For lTmpInt = 1 to mRuleDict.Count
+            lRuleStr = mRuleDict(lTmpInt)
+            lStrArray = Split(lRuleStr, ",")
+
+            lStrArraySize = UBound(lStrArray) + 1
+
+            If TestSet_Fields.Field(lStrArray(0)).FieldName = pFieldName Then
+                lFieldInList = True
+            End If
+
+            ' Compare the first 4 rule elements: (field, from, to, and role).   If this rule
+            ' evaluates to a match, we set to TRUE for further evaluation if there are
+            ' addition field dependency conditions are present.
+            lFlagFirstRuleMatch = False
+            If TestSet_Fields.Field(lStrArray(0)).FieldName = pFieldName Then
+                If (lStrArray(1) = TestSet_Fields(pFieldName).Value Or lStrArray(1) = "*" )  Then
+                    If (lStrArray(2) = pNewValue Or lStrArray(2) = "*" ) Then
+                        If (User.IsInGroup(lStrArray(3)) Or lStrArray(3) = "*" ) Then
+                            lFlagFirstRuleMatch = True
+                        End IF
+                    End IF
+                End IF
+            End IF
+
+            ' If the rule passed for the first 4 rule elements, then evaluate any additional
+            ' field dependency conditions
+            lExtraRuleViolation = False
+            If lFlagFirstRuleMatch = True And lStrArraySize > 4 Then
+                lFlagFirstRuleMatchOccurred = True   '  Set Flag to indicate we at least got the primary rule
+                lTmpIntExtraSets = (lStrArraySize - 4) / 2
+                For lTmpExtraInt = 0 to lTmpIntExtraSets-1
+                    'If dependency compare value is wildcard "+", only check for non empty field
+                    If 0 = StrComp("+",lStrArray(5+(2*lTmpExtraInt))) Then
+                        If 0 = StrComp(TestSet_Fields(lStrArray(4+(2*lTmpExtraInt))).Value,"") Then
+                            ExDepField = lStrArray(4+(2*lTmpExtraInt))
+                            lExtraRuleViolation = True
+                        End If
+                    'Compare extra dependency rule value with actual value
+                    ElseIf 0 <> StrComp(TestSet_Fields(lStrArray(4+(2*lTmpExtraInt))).Value,lStrArray(5+(2*lTmpExtraInt))) Then
+                        ExDepField = lStrArray(4+(2*lTmpExtraInt))
+                        lExtraRuleViolation = True
+                    End If
+                Next
+            End If
+
+            If lFlagFirstRuleMatch = True And lExtraRuleViolation = False Then
+                TransitionAllowed = True   '  WE HAVE A MATCH - FIELD CHANGE APPROVED
+                Exit For
+            End If
+        Next
+
+        ' If there is no rule entry for this field it is automatically allowed
+        If lFieldInList = False Then
+            TransitionAllowed = True   ' Can Change = True
+        End If
+
+        'Release Dictionary object items
+        mRuleDict.RemoveAll
+
+        ' If we are denying a transistion due to another field - provide different error message
+
+        If lFlagFirstRuleMatchOccurred = True And TransitionAllowed = False Then
+            MsgBox "This update is not permitted because of a dependency on the field:  " & ExDepField
+        ElseIf TransitionAllowed = False Then
+            MsgBox "Insufficient Priviledges To Make This Change"
+        End If
+
+      On Error GoTo 0
+    End Function
+
+    '------------------------------------------------------------------------
+    ' Function: AddRule
+    ' Description: Called repeatedly to add to a Dictionary Object held in a
+    ' member variable and it has a separate entry for every defect workflow rule.
+    Sub AddRule( pRuleStr )
+      'On Error Resume Next
+
+        ' increment varible holding dictionary index
+        mRuleInt = mRuleInt + 1
+
+        ' add rule to the dictionary object
+        mRuleDict.Add  mRuleInt, pRuleStr
+
+      On Error GoTo 0
+    End Sub
+
+End Class
+
+
+'----------------------------------------------------------------------------
+' CLASS: QMPA_TL_FOLDERMANAGER
+'----------------------------------------------------------------------------
+Class QMPA_TL_FOLDERMANAGER
+    ' The purpose of this class is to be used to manage user permissions for
+    ' contoling modification permissions based on folder hierarchy depth.
+
+    ' One use is to allow only Leaf Folders to have the values changes for the
+    ' cycle assignments.   This is to protect cofigurations from accidental
+    ' mass propagation of cycle assignment to all children nodes of a folder.
+
+    ' Member Variables
+    Dim mCurFolderPath               ' As String
+    Dim mSubFolderCount              ' As Integer
+    Dim mCurFolderDepth              ' As Integer
+
+    '------------------------------------------------------------------------
+    ' Function: FolderChanged
+    ' Description: This function is called when the user moves from one location
+    ' in the tree heirarchy to another.   The values here can be used to determine
+    ' what level down in the hierarchy the folder is and also how many sub folders
+    ' the current folder contains.   Put this function in the MoveToFolder callback.
+    Sub FolderChanged(NewFolder)
+      'On Error Resume Next
+
+      mCurFolderPath = NewFolder.Path
+      mSubFolderCount = NewFolder.Count
+
+      Dim posFound, posCur
+      mCurFolderDepth = 1
+      posCur = 1
+      Do
+          posFound=InStr(posCur,NewFolder.Path,"\",0)
+          posCur = posFound + 1
+          If posFound <> 0 Then
+             mCurFolderDepth = mCurFolderDepth + 1
+          End If
+      Loop While posFound > 0
+
+      On Error GoTo 0
+    End Sub
+
+        '------------------------------------------------------------------------
+    ' Function: FolderCanChange
+    ' Description:  This function is used to intercept folder related events
+    ' and deny users from making changes to levels of the hieararchy that they
+    ' are not pemitted to change.   Place inside the ActionCanExecute callback.
+    Function AllowFolderChange(ActionName)
+        AllowFolderChange = True
+
+        If  ActionName = "RenameTSInTreeAct" Or _
+            ActionName = "DeleteInTreeAct" Or _
+            ActionName = "DelFolderAct" Or _
+            ActionName = "CutInTreeAct"  Then
+           If  mCurFolderDepth  <=  USER_TestLab_FolderPermission  Then
+               MsgBox "The current user lacks permission to make folder changes at this level and higher"
+               AllowFolderChange = False
+           End If
+        ElseIf  ActionName = "AddFolderAct" Or _
+           ActionName = "PasteInTreeAct" Then
+           If  mCurFolderDepth  <  USER_TestLab_FolderPermission  Then
+               MsgBox  "The current user lacks permission to add folders at this level and higher"
+               AllowFolderChange = False
+           End If
+        End If
+    End Function
+
+End Class
+
+'----------------------------------------------------------------------------
+' S E T U P   G L O B A L   V A R I A B L E S
+'----------------------------------------------------------------------------
+Dim gTLFields   : Set gTLFields  = New QMPA_TL_FIELDMANAGER
+Dim gTLTrans   : Set gTLTrans  = New QMPA_TL_TRANSITION_MANAGER
+Dim gTLFolder   : Set gTLFolder  = New QMPA_TL_FOLDERMANAGER
